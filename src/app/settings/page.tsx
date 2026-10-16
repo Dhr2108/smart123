@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +13,21 @@ import { User, Bell, Shield, Palette, Database, Moon, Sun, Save } from 'lucide-r
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'appearance' | 'system'>('profile');
   const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync initial theme from DOM on mount
+    setDarkMode(document.documentElement.classList.contains('dark'));
+  }, []);
+
+  const handleThemeChange = (dark: boolean) => {
+    setDarkMode(dark);
+    localStorage.setItem('darkMode', JSON.stringify(dark));
+    if (dark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   return (
     <Layout title="Settings">
@@ -34,12 +49,12 @@ export default function SettingsPage() {
               <CardContent>
                 <form className="space-y-6">
                   <div className="flex items-center gap-6">
-                    <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-3xl font-bold text-blue-600">DA</span>
+                    <div className="h-24 w-24 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center border-2 border-emerald-500/30">
+                      <span className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">DA</span>
                     </div>
                     <div>
                       <h3 className="text-xl font-semibold">Dr. Admin</h3>
-                      <p className="text-gray-500">Administrator</p>
+                      <p className="text-gray-500 dark:text-gray-400">Administrator</p>
                       <Button variant="outline" className="mt-2"><Save className="h-4 w-4 mr-2" />Change Avatar</Button>
                     </div>
                   </div>
@@ -68,11 +83,11 @@ export default function SettingsPage() {
                   <div key={item} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{item}</p>
-                      <p className="text-sm text-gray-500">Receive {item.toLowerCase()}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Receive {item.toLowerCase()}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-zinc-800 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                     </label>
                   </div>
                 ))}
@@ -95,27 +110,27 @@ export default function SettingsPage() {
                   </div>
                   <Button className="mt-4"><Save className="h-4 w-4 mr-2" />Update Password</Button>
                 </div>
-                <hr />
+                <hr className="border-gray-200 dark:border-emerald-900/30" />
                 <div>
                   <h4 className="font-medium mb-4">Two-Factor Authentication</h4>
-                  <p className="text-gray-500 mb-4">Add an extra layer of security to your account</p>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">Add an extra layer of security to your account</p>
                   <Button variant="outline"><Shield className="h-4 w-4 mr-2" />Enable 2FA</Button>
                 </div>
-                <hr />
+                <hr className="border-gray-200 dark:border-emerald-900/30" />
                 <div>
                   <h4 className="font-medium mb-4">Active Sessions</h4>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-100 dark:border-emerald-900/30">
                       <div>
                         <p className="font-medium">Current Session</p>
-                        <p className="text-sm text-gray-500">Chrome on Windows • 2 minutes ago</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Chrome on Windows • 2 minutes ago</p>
                       </div>
                       <Badge variant="success">Active</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-100 dark:border-emerald-900/30">
                       <div>
                         <p className="font-medium">Mobile App</p>
-                        <p className="text-sm text-gray-500">iOS • 1 day ago</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">iOS • 1 day ago</p>
                       </div>
                       <Button variant="ghost" size="sm">Revoke</Button>
                     </div>
@@ -132,25 +147,46 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h4 className="font-medium mb-4">Theme</h4>
+                  <h4 className="font-medium mb-4">Color Theme</h4>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className={cn('relative cursor-pointer border-2 rounded-lg p-4 transition-colors', darkMode ? 'border-gray-200' : 'border-blue-500 bg-blue-50')}>
-                      <input type="radio" name="theme" checked={!darkMode} onChange={() => setDarkMode(false)} className="sr-only" />
+                    <label
+                      onClick={() => handleThemeChange(false)}
+                      className={cn(
+                        'relative cursor-pointer border-2 rounded-xl p-5 transition-all duration-200 shadow-sm',
+                        !darkMode
+                          ? 'border-emerald-600 bg-emerald-50/70 shadow-emerald-600/10'
+                          : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-black hover:border-emerald-500/50'
+                      )}
+                    >
+                      <input type="radio" name="theme" checked={!darkMode} onChange={() => handleThemeChange(false)} className="sr-only" />
                       <div className="flex items-center gap-4">
-                        <Sun className="h-8 w-8 text-yellow-500" />
+                        <div className="p-3 rounded-lg bg-emerald-100 text-emerald-700">
+                          <Sun className="h-6 w-6" />
+                        </div>
                         <div>
-                          <p className="font-medium">Light Mode</p>
-                          <p className="text-sm text-gray-500">Clean and bright interface</p>
+                          <p className="font-semibold text-gray-900 dark:text-white">White & Green</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Crisp white interface with emerald accents</p>
                         </div>
                       </div>
                     </label>
-                    <label className={cn('relative cursor-pointer border-2 rounded-lg p-4 transition-colors', darkMode ? 'border-blue-500 bg-blue-50' : 'border-gray-200')}>
-                      <input type="radio" name="theme" checked={darkMode} onChange={() => setDarkMode(true)} className="sr-only" />
+
+                    <label
+                      onClick={() => handleThemeChange(true)}
+                      className={cn(
+                        'relative cursor-pointer border-2 rounded-xl p-5 transition-all duration-200 shadow-sm',
+                        darkMode
+                          ? 'border-emerald-500 bg-emerald-950/40 shadow-emerald-500/20'
+                          : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-black hover:border-emerald-500/50'
+                      )}
+                    >
+                      <input type="radio" name="theme" checked={darkMode} onChange={() => handleThemeChange(true)} className="sr-only" />
                       <div className="flex items-center gap-4">
-                        <Moon className="h-8 w-8 text-blue-500" />
+                        <div className="p-3 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800/60">
+                          <Moon className="h-6 w-6" />
+                        </div>
                         <div>
-                          <p className="font-medium">Dark Mode</p>
-                          <p className="text-sm text-gray-500">Easy on the eyes in low light</p>
+                          <p className="font-semibold text-gray-900 dark:text-white">Black & Green</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Pitch black interface with neon emerald accents</p>
                         </div>
                       </div>
                     </label>
@@ -159,7 +195,7 @@ export default function SettingsPage() {
                 <div>
                   <h4 className="font-medium mb-4">Sidebar</h4>
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                    <input type="checkbox" defaultChecked className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500" />
                     <span>Collapse sidebar by default</span>
                   </label>
                 </div>

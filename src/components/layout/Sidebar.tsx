@@ -15,11 +15,13 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import { useState } from 'react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'AI Triage', href: '/triage', icon: Sparkles, badge: 'AI' },
   { name: 'Patients', href: '/patients', icon: Users, badge: '12' },
   { name: 'Doctors', href: '/doctors', icon: UserPlus, badge: '5' },
   { name: 'Appointments', href: '/appointments', icon: Calendar, badge: '24' },
@@ -35,33 +37,33 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen border-r border-gray-200 bg-white transition-all duration-300',
+        'fixed left-0 top-0 z-40 h-screen border-r border-gray-200 dark:border-emerald-900/30 bg-white dark:bg-black transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
       aria-label="Main navigation"
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className={cn('flex h-16 items-center justify-between border-b px-4', collapsed && 'justify-center')}>
+        <div className={cn('flex h-16 items-center justify-between border-b border-gray-100 dark:border-emerald-900/30 px-4', collapsed && 'justify-center')}>
           {!collapsed && (
             <Link href="/dashboard" className="flex items-center gap-2" aria-label="Hospital Management System">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <HeartPulse className="h-5 w-5 text-white" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 dark:bg-emerald-500 shadow-sm shadow-emerald-500/20">
+                <HeartPulse className="h-5 w-5 text-white dark:text-black" />
               </div>
-              <span className="font-bold text-lg text-gray-900">HMS</span>
+              <span className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">HMS</span>
             </Link>
           )}
           {collapsed && (
             <Link href="/dashboard" className="flex items-center justify-center" aria-label="Hospital Management System">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <HeartPulse className="h-5 w-5 text-white" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 dark:bg-emerald-500 shadow-sm shadow-emerald-500/20">
+                <HeartPulse className="h-5 w-5 text-white dark:text-black" />
               </div>
             </Link>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors',
+              'flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors',
               collapsed && 'ml-auto'
             )}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -80,10 +82,10 @@ export function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-400 font-semibold border-r-2 border-emerald-600 dark:border-emerald-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300',
                   collapsed && 'justify-center px-2'
                 )}
                 aria-current={isActive ? 'page' : undefined}
@@ -94,7 +96,7 @@ export function Sidebar() {
                   <>
                     <span className="truncate">{item.name}</span>
                     {item.badge && (
-                      <span className="ml-auto inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                      <span className="ml-auto inline-flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/60">
                         {item.badge}
                       </span>
                     )}
@@ -106,10 +108,10 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className={cn('border-t p-4', collapsed && 'hidden')}>
+        <div className={cn('border-t border-gray-100 dark:border-emerald-900/30 p-4', collapsed && 'hidden')}>
           <Link
             href="/settings"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors"
           >
             <Settings className="h-5 w-5" aria-hidden="true" />
             <span>Settings</span>

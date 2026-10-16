@@ -26,7 +26,7 @@ export function Avatar({ src, alt, name, size = 'md', className }: AvatarProps) 
   return (
     <div
       className={cn(
-        'relative inline-flex shrink-0 overflow-hidden rounded-full bg-gray-100',
+        'relative inline-flex shrink-0 overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-950 border border-emerald-200/60 dark:border-emerald-800/60',
         sizes[size],
         className
       )}
@@ -39,7 +39,7 @@ export function Avatar({ src, alt, name, size = 'md', className }: AvatarProps) 
           className="aspect-square h-full w-full object-cover"
         />
       ) : (
-        <span className="flex h-full w-full items-center justify-center font-medium text-gray-600">
+        <span className="flex h-full w-full items-center justify-center font-semibold text-emerald-800 dark:text-emerald-300">
           {initials}
         </span>
       )}

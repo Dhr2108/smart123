@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { mockBills, mockPatients, Bill, BillItem } from '@/lib/mockData';
-import { formatCurrency, formatDate, generateId, getStatusColor } from '@/lib/utils';
-import { Plus, Search, Edit, Trash2, Eye, DollarSign, FileText, CreditCard, Download } from 'lucide-react';
+import { formatCurrency, formatDate, generateId } from '@/lib/utils';
+import { Plus, Search, Edit, Trash2, Eye, Download } from 'lucide-react';
+import { billingApi } from '@/lib/api';
 
 const billStatuses = ['Pending', 'Paid', 'Partial', 'Cancelled', 'Refunded'];
 const paymentMethods = ['Cash', 'Card', 'Insurance', 'Online', 'UPI'];
@@ -19,6 +20,19 @@ const billCategories = ['Consultation', 'Lab Test', 'Medicine', 'Procedure', 'Ro
 
 export default function BillingPage() {
   const [bills, setBills] = useState<Bill[]>(mockBills);
+
+  useEffect(() => {
+    billingApi
+      .list()
+      .then((res) => {
+        if (res.bills && res.bills.length > 0) {
+          setBills(res.bills as Bill[]);
+        }
+      })
+      .catch(() => {
+        // Fall back gracefully to mock data
+      });
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,16 +61,7 @@ export default function BillingPage() {
     dueDate: '',
   });
 
-  // Initialize dueDate on mount to avoid build-time Date.now()
-  useEffect(() => {
-    if (!formData.dueDate) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: initializing dueDate on mount
-      setFormData(prev => ({
-        ...prev,
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      }));
-    }
-  }, []);
+
 
   const filteredBills = bills.filter((bill) => {
     const matchesSearch =
@@ -123,18 +128,27 @@ export default function BillingPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const patient = mockPatients.find(p => p.id === formData.patientId);
     
     if (editingBill) {
+      const updated: Bill = {
+        ...editingBill,
+        ...formData,
+        patientName: patient?.name || '',
+        subtotal,
+        total,
+        updatedAt: new Date().toISOString(),
+      };
       setBills((prev) =>
-        prev.map((b) =>
-          b.id === editingBill.id
-            ? { ...b, ...formData, patientName: patient?.name || '', subtotal, total, updatedAt: new Date().toISOString() }
-            : b
-        )
+        prev.map((b) => (b.id === editingBill.id ? updated : b))
       );
+      try {
+        await billingApi.update(editingBill.id, updated);
+      } catch {
+        // Handled locally
+      }
     } else {
       const newBill: Bill = {
         id: generateId('BIL'),
@@ -153,13 +167,19 @@ export default function BillingPage() {
         updatedAt: new Date().toISOString(),
       };
       setBills((prev) => [newBill, ...prev]);
+      try {
+        await billingApi.create(newBill);
+      } catch {
+        // Handled locally
+      }
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (billToDelete) {
-      setBills((prev) => prev.filter((b) => b.id !== billToDelete));
+      const id = billToDelete;
+      setBills((prev) => prev.filter((b) => b.id !== id));
       setBillToDelete(null);
     }
     setIsDeleteConfirmOpen(false);
@@ -181,7 +201,7 @@ export default function BillingPage() {
                 placeholder="Search bills..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <Select

@@ -53,28 +53,28 @@ export function formatTime(timeString: string): string {
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    Active: 'bg-green-100 text-green-800',
-    Inactive: 'bg-gray-100 text-gray-800',
-    Discharged: 'bg-blue-100 text-blue-800',
-    'On Leave': 'bg-yellow-100 text-yellow-800',
-    Scheduled: 'bg-blue-100 text-blue-800',
-    Confirmed: 'bg-green-100 text-green-800',
-    'In Progress': 'bg-yellow-100 text-yellow-800',
-    Completed: 'bg-green-100 text-green-800',
-    Cancelled: 'bg-red-100 text-red-800',
-    'No Show': 'bg-red-100 text-red-800',
-    Pending: 'bg-yellow-100 text-yellow-800',
-    Paid: 'bg-green-100 text-green-800',
-    Partial: 'bg-blue-100 text-blue-800',
-    Refunded: 'bg-purple-100 text-purple-800',
-    'In Stock': 'bg-green-100 text-green-800',
-    'Low Stock': 'bg-yellow-100 text-yellow-800',
-    'Out of Stock': 'bg-red-100 text-red-800',
-    Expired: 'bg-red-100 text-red-800',
-    Ordered: 'bg-blue-100 text-blue-800',
-    'Sample Collected': 'bg-yellow-100 text-yellow-800',
+    Active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:border dark:border-emerald-700/60',
+    Inactive: 'bg-gray-100 text-gray-800 dark:bg-black dark:text-gray-300 dark:border dark:border-emerald-900/40',
+    Discharged: 'bg-teal-100 text-teal-800 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border dark:border-emerald-700/50',
+    'On Leave': 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 dark:border dark:border-amber-800/50',
+    Scheduled: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border dark:border-emerald-700/50',
+    Confirmed: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:border dark:border-emerald-700/60',
+    'In Progress': 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 dark:border dark:border-amber-800/50',
+    Completed: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:border dark:border-emerald-700/60',
+    Cancelled: 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 dark:border dark:border-rose-800/50',
+    'No Show': 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 dark:border dark:border-rose-800/50',
+    Pending: 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 dark:border dark:border-amber-800/50',
+    Paid: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:border dark:border-emerald-700/60',
+    Partial: 'bg-teal-100 text-teal-800 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border dark:border-emerald-700/50',
+    Refunded: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400 dark:border dark:border-emerald-800/50',
+    'In Stock': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:border dark:border-emerald-700/60',
+    'Low Stock': 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 dark:border dark:border-amber-800/50',
+    'Out of Stock': 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 dark:border dark:border-rose-800/50',
+    Expired: 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 dark:border dark:border-rose-800/50',
+    Ordered: 'bg-teal-100 text-teal-800 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border dark:border-emerald-700/50',
+    'Sample Collected': 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 dark:border dark:border-amber-800/50',
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
+  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-black dark:text-gray-300 dark:border dark:border-emerald-900/40';
 }
 
 export function getInitials(name: string): string {

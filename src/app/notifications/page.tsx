@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
-import { Bell, Mail, Check, Filter, X } from 'lucide-react';
+import { Bell, Check, X } from 'lucide-react';
 
 const mockNotifications = [
   { id: 1, title: 'New Appointment', message: 'John Smith booked for 2:00 PM', time: '5 min ago', read: false, type: 'appointment', priority: 'high' },
@@ -172,17 +172,20 @@ function NotificationsList({ notifications, onMarkAsRead, onDelete }: {
   return (
     <div className="space-y-3">
       {notifications.map((notification) => (
-        <Card key={notification.id} className={!notification.read ? 'border-blue-200 bg-blue-50' : ''}>
+        <Card key={notification.id} className={!notification.read ? 'border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/40' : ''}>
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Bell className="h-5 w-5 text-blue-600" />
+                <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/50">
+                  {(() => {
+                    const IconComponent = typeIcons[notification.type] || Bell;
+                    return <IconComponent className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />;
+                  })()}
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3">
-                  <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{notification.title}</h4>
                   <Badge variant={notification.priority === 'high' ? 'danger' : notification.priority === 'medium' ? 'warning' : 'secondary'}>
                     {notification.priority}
                   </Badge>
@@ -190,8 +193,8 @@ function NotificationsList({ notifications, onMarkAsRead, onDelete }: {
                     {typeLabels[notification.type] || notification.type}
                   </Badge>
                 </div>
-                <p className="text-gray-600 mt-1">{notification.message}</p>
-                <p className="text-sm text-gray-400 mt-2">{notification.time}</p>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">{notification.time}</p>
               </div>
               <div className="flex items-center gap-2">
                 {!notification.read && (
@@ -228,9 +231,9 @@ function Select({ value, onChange, options, className }: {
   className?: string;
 }) {
   return (
-    <select value={value} onChange={onChange} className={`flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${className || ''}`}>
+    <select value={value} onChange={onChange} className={`flex h-10 w-full rounded-md border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${className || ''}`}>
       {options.map((option) => (
-        <option key={option.value} value={option.value}>{option.label}</option>
+        <option key={option.value} value={option.value} className="bg-white dark:bg-black">{option.label}</option>
       ))}
     </select>
   );

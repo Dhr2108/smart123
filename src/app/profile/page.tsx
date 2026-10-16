@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/AuthContext';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -8,7 +10,7 @@ import { Input } from '@/components/ui/Input';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
-import { User, Mail, Phone, MapPin, Calendar, Save, Camera, Shield, Bell, Key, LogOut } from 'lucide-react';
+import { User, Save, Camera, Shield, Bell, Key, LogOut } from 'lucide-react';
 
 const mockUser = {
   id: 'USR-001',
@@ -27,11 +29,12 @@ const mockUser = {
 };
 
 export default function ProfilePage() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'activity'>('profile');
-  const [darkMode, setDarkMode] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: mockUser.name,
-    email: mockUser.email,
+    fullName: user?.name || mockUser.name,
+    email: user?.email || mockUser.email,
     phone: mockUser.phone,
     department: mockUser.department,
     address: mockUser.address,
@@ -39,13 +42,24 @@ export default function ProfilePage() {
     bloodGroup: mockUser.bloodGroup,
   });
 
+  useEffect(() => {
+    if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync with auth state
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user.name || prev.fullName,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
+
   const handleSave = () => {
-    // In a real app, this would call an API
     alert('Profile saved successfully!');
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const handleSignOut = async () => {
+    await logout();
+    router.push('/login');
   };
 
   return (
@@ -56,21 +70,21 @@ export default function ProfilePage() {
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="relative">
-                <Avatar name={mockUser.name} size="xl" className="bg-blue-100" />
-                <button className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" aria-label="Change avatar">
+                <Avatar name={mockUser.name} size="xl" className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700" />
+                <button className="absolute bottom-0 right-0 p-2 bg-emerald-600 dark:bg-emerald-500 text-white dark:text-black rounded-full hover:bg-emerald-700 dark:hover:bg-emerald-400 transition-colors shadow-md" aria-label="Change avatar">
                   <Camera className="h-4 w-4" />
                 </button>
               </div>
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <h1 className="text-2xl font-bold text-gray-900">{mockUser.name}</h1>
-                  <Badge variant="secondary">{mockUser.role}</Badge>
+                  <h1 className="text-2xl font-bold text-gray-900">{formData.fullName}</h1>
+                  <Badge variant="secondary">{user?.role || mockUser.role}</Badge>
                 </div>
-                <p className="text-gray-500 mt-1">{mockUser.email}</p>
-                <p className="text-sm text-gray-400">Employee ID: {mockUser.employeeId} • Department: {mockUser.department}</p>
+                <p className="text-gray-500 mt-1">{formData.email}</p>
+                <p className="text-sm text-gray-400">Employee ID: {mockUser.employeeId} • Department: {formData.department}</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline"><LogOut className="h-4 w-4 mr-2" />Sign Out</Button>
+                <Button variant="outline" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" />Sign Out</Button>
                 <Button onClick={handleSave}><Save className="h-4 w-4 mr-2" />Save Changes</Button>
               </div>
             </div>
@@ -205,10 +219,10 @@ export default function ProfilePage() {
                       { action: 'Viewed billing report', details: 'Monthly revenue', time: 'Yesterday', ip: '192.168.1.100', device: 'Chrome on Windows' },
                       { action: 'Logged in', time: '2 days ago', ip: '192.168.1.50', device: 'Mobile Safari on iOS' },
                     ].map((activity, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-emerald-900/30 rounded-lg">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <User className="h-5 w-5 text-blue-600" />
+                          <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/40">
+                            <User className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
                           </div>
                           <div>
                             <p className="font-medium">{activity.action}</p>

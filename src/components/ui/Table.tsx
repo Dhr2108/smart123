@@ -61,10 +61,10 @@ export function Table<T>({
               <tr
                 key={keyExtractor(row)}
                 className={cn(
-                  'border-b border-gray-100 transition-colors',
-                  striped && rowIndex % 2 === 1 && 'bg-gray-50',
-                  hoverable && onRowClick && 'hover:bg-blue-50 cursor-pointer',
-                  hoverable && !onRowClick && 'hover:bg-gray-50'
+                  'border-b border-gray-100 dark:border-emerald-900/30 transition-colors',
+                  striped && rowIndex % 2 === 1 && 'bg-gray-50/50 dark:bg-zinc-950/50',
+                  hoverable && onRowClick && 'hover:bg-emerald-50/70 dark:hover:bg-emerald-950/50 cursor-pointer',
+                  hoverable && !onRowClick && 'hover:bg-gray-50/60 dark:hover:bg-zinc-900/40'
                 )}
                 onClick={() => onRowClick?.(row)}
               >

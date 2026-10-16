@@ -52,29 +52,29 @@ export function Modal({
       >
         <div
           className={cn(
-            'relative w-full rounded-lg bg-white shadow-lg transition-all',
+            'relative w-full rounded-2xl border border-gray-200 dark:border-emerald-900/50 bg-white dark:bg-black shadow-2xl transition-all',
             sizes[size],
             className
           )}
           onClick={(e) => e.stopPropagation()}
         >
           {(title || description) && (
-            <div className="flex items-start justify-between border-b p-4">
+            <div className="flex items-start justify-between border-b border-gray-100 dark:border-emerald-900/30 p-5">
               <div>
                 {title && (
-                  <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+                  <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-white">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p id="modal-description" className="mt-1 text-sm text-gray-500">
+                  <p id="modal-description" className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     {description}
                   </p>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500 transition-colors"
+                className="text-gray-400 dark:text-emerald-400 hover:text-gray-600 dark:hover:text-emerald-300 p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-colors"
                 aria-label="Close modal"
               >
                 <X className="h-5 w-5" />

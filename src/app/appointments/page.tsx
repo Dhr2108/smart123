@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -10,14 +10,28 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { mockAppointments, mockPatients, mockDoctors, Appointment } from '@/lib/mockData';
-import { formatDate, formatTime, getStatusColor, generateId } from '@/lib/utils';
-import { Plus, Search, Edit, Trash2, Eye, Calendar, Check, X, Clock } from 'lucide-react';
+import { formatDate, formatTime, generateId } from '@/lib/utils';
+import { Plus, Search, Edit, Trash2, Eye, Calendar } from 'lucide-react';
+import { appointmentsApi } from '@/lib/api';
 
 const appointmentTypes = ['Consultation', 'Follow-up', 'Emergency', 'Telemedicine'];
 const appointmentStatuses = ['Scheduled', 'Confirmed', 'In Progress', 'Completed', 'Cancelled', 'No Show'];
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+
+  useEffect(() => {
+    appointmentsApi
+      .list()
+      .then((res) => {
+        if (res.appointments && res.appointments.length > 0) {
+          setAppointments(res.appointments as Appointment[]);
+        }
+      })
+      .catch(() => {
+        // Fall back gracefully to mock data
+      });
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
@@ -87,19 +101,27 @@ export default function AppointmentsPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const patient = mockPatients.find(p => p.id === formData.patientId);
     const doctor = mockDoctors.find(d => d.id === formData.doctorId);
     
     if (editingAppointment) {
+      const updated = {
+        ...editingAppointment,
+        ...formData,
+        patientName: patient?.name || '',
+        doctorName: doctor?.name || '',
+        updatedAt: new Date().toISOString(),
+      };
       setAppointments((prev) =>
-        prev.map((a) =>
-          a.id === editingAppointment.id
-            ? { ...a, ...formData, patientName: patient?.name || '', doctorName: doctor?.name || '', updatedAt: new Date().toISOString() }
-            : a
-        )
+        prev.map((a) => (a.id === editingAppointment.id ? updated : a))
       );
+      try {
+        await appointmentsApi.update(editingAppointment.id, formData);
+      } catch {
+        // Handled locally
+      }
     } else {
       const newAppointment: Appointment = {
         id: generateId('APT'),
@@ -110,22 +132,38 @@ export default function AppointmentsPage() {
         updatedAt: new Date().toISOString(),
       };
       setAppointments((prev) => [newAppointment, ...prev]);
+      try {
+        await appointmentsApi.create(newAppointment);
+      } catch {
+        // Handled locally
+      }
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (appointmentToDelete) {
-      setAppointments((prev) => prev.filter((a) => a.id !== appointmentToDelete));
+      const id = appointmentToDelete;
+      setAppointments((prev) => prev.filter((a) => a.id !== id));
       setAppointmentToDelete(null);
+      try {
+        await appointmentsApi.delete(id);
+      } catch {
+        // Handled locally
+      }
     }
     setIsDeleteConfirmOpen(false);
   };
 
-  const updateStatus = (id: string, status: Appointment['status']) => {
+  const updateStatus = async (id: string, status: Appointment['status']) => {
     setAppointments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a))
     );
+    try {
+      await appointmentsApi.update(id, { status });
+    } catch {
+      // Handled locally
+    }
   };
 
   return (
@@ -144,7 +182,7 @@ export default function AppointmentsPage() {
                 placeholder="Search appointments..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <Select

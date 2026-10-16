@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -10,14 +10,28 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { mockMedicines, Medicine } from '@/lib/mockData';
-import { formatCurrency, formatDate, generateId, getStatusColor } from '@/lib/utils';
+import { formatCurrency, formatDate, generateId } from '@/lib/utils';
 import { Plus, Search, Edit, Trash2, Eye, Pill, AlertTriangle, Package } from 'lucide-react';
+import { pharmacyApi } from '@/lib/api';
 
 const medicineCategories = ['Antihypertensive', 'Antibiotic', 'Antidiabetic', 'NSAID', 'Statin', 'PPI', 'Anticoagulant', 'Bronchodilator', 'Antidepressant', 'Other'];
 const medicineStatuses = ['In Stock', 'Low Stock', 'Out of Stock', 'Expired'];
 
 export default function PharmacyPage() {
   const [medicines, setMedicines] = useState<Medicine[]>(mockMedicines);
+
+  useEffect(() => {
+    pharmacyApi
+      .list()
+      .then((res) => {
+        if (res.medicines && res.medicines.length > 0) {
+          setMedicines(res.medicines as Medicine[]);
+        }
+      })
+      .catch(() => {
+        // Fall back gracefully to mock data
+      });
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -101,18 +115,22 @@ export default function PharmacyPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const status = formData.quantity === 0 ? 'Out of Stock' : 
                    new Date(formData.expiryDate) < new Date() ? 'Expired' :
                    formData.quantity <= formData.reorderLevel ? 'Low Stock' : 'In Stock';
     
     if (editingMedicine) {
+      const updated: Medicine = { ...editingMedicine, ...formData, status };
       setMedicines((prev) =>
-        prev.map((m) =>
-          m.id === editingMedicine.id ? { ...m, ...formData, status } : m
-        )
+        prev.map((m) => (m.id === editingMedicine.id ? updated : m))
       );
+      try {
+        await pharmacyApi.update(editingMedicine.id, updated);
+      } catch {
+        // Handled locally
+      }
     } else {
       const newMedicine: Medicine = {
         id: generateId('MED'),
@@ -120,14 +138,25 @@ export default function PharmacyPage() {
         status,
       };
       setMedicines((prev) => [newMedicine, ...prev]);
+      try {
+        await pharmacyApi.create(newMedicine);
+      } catch {
+        // Handled locally
+      }
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (medicineToDelete) {
-      setMedicines((prev) => prev.filter((m) => m.id !== medicineToDelete));
+      const id = medicineToDelete;
+      setMedicines((prev) => prev.filter((m) => m.id !== id));
       setMedicineToDelete(null);
+      try {
+        await pharmacyApi.delete(id);
+      } catch {
+        // Handled locally
+      }
     }
     setIsDeleteConfirmOpen(false);
   };
@@ -180,7 +209,7 @@ export default function PharmacyPage() {
                 placeholder="Search medicines..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <Select

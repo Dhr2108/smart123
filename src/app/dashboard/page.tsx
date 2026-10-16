@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { StatsCard } from '@/components/layout/StatsCard';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -7,7 +8,8 @@ import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { mockDashboardStats, mockAppointments, mockPatients, mockBills } from '@/lib/mockData';
-import { formatDate, formatTime, formatCurrency, getStatusColor } from '@/lib/utils';
+import { formatDate, formatCurrency, getStatusColor } from '@/lib/utils';
+import { dashboardApi } from '@/lib/api';
 import {
   Users,
   UserPlus,
@@ -16,50 +18,68 @@ import {
   TrendingUp,
   AlertTriangle,
   ArrowUpRight,
-  ArrowDownRight,
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const [dashboardStats, setDashboardStats] = useState(mockDashboardStats);
+
+  useEffect(() => {
+    dashboardApi
+      .getStats()
+      .then((res) => {
+        if (res.stats) {
+          setDashboardStats((prev) => ({
+            ...prev,
+            ...res.stats,
+          }));
+        }
+      })
+      .catch(() => {
+        // Fall back to mock stats gracefully
+      });
+  }, []);
+
   const stats = [
     {
       title: 'Total Patients',
-      value: mockDashboardStats.totalPatients,
+      value: dashboardStats.totalPatients,
       icon: <Users className="h-6 w-6" />,
       trend: { value: 12, label: 'vs last month', positive: true },
       color: 'blue' as const,
     },
     {
       title: 'Total Doctors',
-      value: mockDashboardStats.totalDoctors,
+      value: dashboardStats.totalDoctors,
       icon: <UserPlus className="h-6 w-6" />,
       trend: { value: 2, label: 'vs last month', positive: true },
       color: 'green' as const,
     },
     {
       title: "Today's Appointments",
-      value: mockDashboardStats.todayAppointments,
+      value: dashboardStats.todayAppointments,
       icon: <Calendar className="h-6 w-6" />,
       trend: { value: 5, label: 'vs yesterday', positive: true },
       color: 'purple' as const,
     },
     {
       title: 'Revenue Today',
-      value: mockDashboardStats.revenueToday,
+      value: dashboardStats.revenueToday,
       icon: <DollarSign className="h-6 w-6" />,
       trend: { value: 8, label: 'vs yesterday', positive: true },
       color: 'yellow' as const,
     },
     {
       title: 'Pending Bills',
-      value: mockDashboardStats.pendingBills,
+      value: dashboardStats.pendingBills,
       icon: <AlertTriangle className="h-6 w-6" />,
       trend: { value: 3, label: 'vs last week', positive: false },
       color: 'red' as const,
     },
     {
       title: 'Low Stock Medicines',
-      value: mockDashboardStats.lowStockMedicines,
+      value: dashboardStats.lowStockMedicines,
       icon: <TrendingUp className="h-6 w-6" />,
       trend: { value: 2, label: 'vs last week', positive: false },
       color: 'orange' as const,
@@ -84,7 +104,7 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Today&apos;s Appointments</CardTitle>
-            <Link href="/appointments" className="text-sm text-blue-600 hover:underline">
+            <Link href="/appointments" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">
               View All
             </Link>
           </CardHeader>
@@ -107,7 +127,7 @@ export default function DashboardPage() {
                 {
                   key: 'actions',
                   header: '',
-                  render: (row) => (
+                  render: () => (
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <ArrowUpRight className="h-4 w-4" />
                     </Button>
@@ -125,20 +145,20 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Recent Patients</CardTitle>
-            <Link href="/patients" className="text-sm text-blue-600 hover:underline">
+            <Link href="/patients" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">
               View All
             </Link>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentPatients.map((patient) => (
-                <div key={patient.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50">
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <span className="font-medium text-blue-600">{patient.name.split(' ').map((n: string) => n[0]).join('')}</span>
+                <div key={patient.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/40">
+                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">{patient.name.split(' ').map((n: string) => n[0]).join('')}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{patient.name}</p>
-                    <p className="text-xs text-gray-500">{patient.email}</p>
+                    <p className="font-medium text-sm truncate text-gray-900 dark:text-white">{patient.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{patient.email}</p>
                   </div>
                   <Badge variant={patient.status === 'Active' ? 'success' : patient.status === 'Discharged' ? 'info' : 'secondary'}>
                     {patient.status}
@@ -153,7 +173,7 @@ export default function DashboardPage() {
         <Card className="xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Pending Bills</CardTitle>
-            <Link href="/billing" className="text-sm text-blue-600 hover:underline">
+            <Link href="/billing" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">
               View All
             </Link>
           </CardHeader>
@@ -194,28 +214,49 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Link href="/patients/new">
-                <Button variant="outline" className="h-20 w-full justify-start gap-3">
-                  <Users className="h-5 w-5" />
-                  <span>Register Patient</span>
+              <Link href="/triage" className="sm:col-span-2">
+                <Button className="h-16 w-full justify-start gap-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white dark:text-black font-semibold shadow-sm shadow-emerald-600/20">
+                  <Sparkles className="h-5 w-5 text-emerald-100 dark:text-black" />
+                  <div className="text-left">
+                    <p className="font-semibold text-sm">AI Clinical Triage</p>
+                    <p className="text-xs text-emerald-100/90 dark:text-black/80 font-medium">Assess patient symptoms & urgency</p>
+                  </div>
                 </Button>
               </Link>
-              <Link href="/appointments/new">
-                <Button variant="outline" className="h-20 w-full justify-start gap-3">
-                  <Calendar className="h-5 w-5" />
-                  <span>New Appointment</span>
+              <Link href="/patients">
+                <Button variant="outline" className="h-16 w-full justify-start gap-3">
+                  <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">Patients</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Manage records</p>
+                  </div>
                 </Button>
               </Link>
-              <Link href="/billing/new">
-                <Button variant="outline" className="h-20 w-full justify-start gap-3">
-                  <DollarSign className="h-5 w-5" />
-                  <span>Create Bill</span>
+              <Link href="/appointments">
+                <Button variant="outline" className="h-16 w-full justify-start gap-3">
+                  <Calendar className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">Appointments</p>
+                    <p className="text-xs text-gray-500">Schedule slots</p>
+                  </div>
                 </Button>
               </Link>
-              <Link href="/pharmacy/new">
-                <Button variant="outline" className="h-20 w-full justify-start gap-3">
-                  <TrendingUp className="h-5 w-5" />
-                  <span>Add Medicine</span>
+              <Link href="/billing">
+                <Button variant="outline" className="h-16 w-full justify-start gap-3">
+                  <DollarSign className="h-5 w-5 text-emerald-600" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">Invoices & Bills</p>
+                    <p className="text-xs text-gray-500">Process payments</p>
+                  </div>
+                </Button>
+              </Link>
+              <Link href="/pharmacy">
+                <Button variant="outline" className="h-16 w-full justify-start gap-3">
+                  <TrendingUp className="h-5 w-5 text-amber-600" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">Pharmacy Stock</p>
+                    <p className="text-xs text-gray-500">Inventory alerts</p>
+                  </div>
                 </Button>
               </Link>
             </div>

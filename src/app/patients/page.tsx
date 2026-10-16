@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -10,13 +10,26 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { mockPatients, Patient } from '@/lib/mockData';
-import { formatDate, getStatusColor, getInitials, generateId } from '@/lib/utils';
+import { formatDate, getInitials, generateId } from '@/lib/utils';
 import { ClientAge } from '@/components/ui/ClientAge';
-import { Plus, Search, Edit, Trash2, MoreHorizontal, Eye } from 'lucide-react';
-import Link from 'next/link';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { patientsApi } from '@/lib/api';
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<Patient[]>(mockPatients);
+
+  useEffect(() => {
+    patientsApi
+      .list()
+      .then((res) => {
+        if (res.patients && res.patients.length > 0) {
+          setPatients(res.patients as Patient[]);
+        }
+      })
+      .catch(() => {
+        // Fall back gracefully to mock data
+      });
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,14 +109,18 @@ export default function PatientsPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingPatient) {
+      const updated = { ...editingPatient, ...formData, updatedAt: new Date().toISOString() };
       setPatients((prev) =>
-        prev.map((p) =>
-          p.id === editingPatient.id ? { ...p, ...formData, updatedAt: new Date().toISOString() } : p
-        )
+        prev.map((p) => (p.id === editingPatient.id ? updated : p))
       );
+      try {
+        await patientsApi.update(editingPatient.id, formData);
+      } catch {
+        // Maintained in local state
+      }
     } else {
       const newPatient: Patient = {
         id: generateId('PAT'),
@@ -112,14 +129,25 @@ export default function PatientsPage() {
         updatedAt: new Date().toISOString(),
       };
       setPatients((prev) => [newPatient, ...prev]);
+      try {
+        await patientsApi.create(newPatient);
+      } catch {
+        // Maintained in local state
+      }
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (patientToDelete) {
-      setPatients((prev) => prev.filter((p) => p.id !== patientToDelete));
+      const id = patientToDelete;
+      setPatients((prev) => prev.filter((p) => p.id !== id));
       setPatientToDelete(null);
+      try {
+        await patientsApi.delete(id);
+      } catch {
+        // Handled locally
+      }
     }
     setIsDeleteConfirmOpen(false);
   };
@@ -143,7 +171,7 @@ export default function PatientsPage() {
                 placeholder="Search patients..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <Select
@@ -175,8 +203,8 @@ export default function PatientsPage() {
                   header: 'Patient',
                   render: (row) => (
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-600">{getInitials(row.name)}</span>
+                      <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/40">
+                        <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{getInitials(row.name)}</span>
                       </div>
                       <div>
                         <p className="font-medium">{row.name}</p>
@@ -306,8 +334,8 @@ export default function PatientsPage() {
         {viewingPatient && (
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-2xl font-bold text-blue-600">{getInitials(viewingPatient.name)}</span>
+              <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center border-2 border-emerald-300 dark:border-emerald-700">
+                <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{getInitials(viewingPatient.name)}</span>
               </div>
               <div>
                 <h3 className="text-xl font-bold">{viewingPatient.name}</h3>

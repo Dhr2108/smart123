@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -11,8 +11,9 @@ import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { mockLabTests, mockLabOrders, LabTest, LabOrder, LabOrderTest } from '@/lib/mockData';
-import { formatCurrency, formatDate, formatTime, formatDateTime, formatDateTimeShort, generateId, getStatusColor } from '@/lib/utils';
-import { Plus, Search, Edit, Trash2, Eye, FlaskConical, FileText, Check, X, Clock, Microscope, Droplet } from 'lucide-react';
+import { formatCurrency, formatDateTime, formatDateTimeShort, generateId } from '@/lib/utils';
+import { Plus, Search, Edit, Trash2, Eye, FlaskConical, FileText } from 'lucide-react';
+import { labApi } from '@/lib/api';
 
 const testCategories = ['Hematology', 'Biochemistry', 'Endocrinology', 'Radiology', 'Cardiology', 'Microbiology', 'Immunology', 'Other'];
 const orderStatuses = ['Ordered', 'Sample Collected', 'In Progress', 'Completed', 'Cancelled'];
@@ -21,6 +22,20 @@ const testStatuses = ['Pending', 'In Progress', 'Completed', 'Cancelled'];
 export default function LabPage() {
   const [tests, setTests] = useState<LabTest[]>(mockLabTests);
   const [orders, setOrders] = useState<LabOrder[]>(mockLabOrders);
+
+  useEffect(() => {
+    Promise.all([
+      labApi.listTests().catch(() => ({ tests: [] })),
+      labApi.listOrders().catch(() => ({ orders: [] })),
+    ]).then(([testsRes, ordersRes]) => {
+      if (testsRes.tests && testsRes.tests.length > 0) {
+        setTests(testsRes.tests as LabTest[]);
+      }
+      if (ordersRes.orders && ordersRes.orders.length > 0) {
+        setOrders(ordersRes.orders as LabOrder[]);
+      }
+    });
+  }, []);
   const [activeTab, setActiveTab] = useState<'tests' | 'orders'>('tests');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -222,6 +237,7 @@ export default function LabPage() {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updateTestStatus = (orderId: string, testId: string, status: LabOrderTest['status']) => {
     setOrders((prev) =>
       prev.map((o) =>
@@ -262,7 +278,7 @@ export default function LabPage() {
                       placeholder="Search tests..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                   <Select
@@ -337,7 +353,7 @@ export default function LabPage() {
                       placeholder="Search orders..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                   <Select

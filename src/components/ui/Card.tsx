@@ -19,7 +19,7 @@ export function Card({ children, className, padding = 'md' }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 bg-white shadow-sm',
+        'rounded-xl border border-gray-200 dark:border-emerald-900/40 bg-white dark:bg-black shadow-sm transition-colors',
         paddings[padding],
         className
       )}
@@ -34,11 +34,11 @@ export function CardHeader({ children, className }: { children: React.ReactNode;
 }
 
 export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <h3 className={cn('text-lg font-semibold text-gray-900', className)}>{children}</h3>;
+  return <h3 className={cn('text-lg font-semibold text-gray-900 dark:text-white', className)}>{children}</h3>;
 }
 
 export function CardDescription({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <p className={cn('mt-1 text-sm text-gray-500', className)}>{children}</p>;
+  return <p className={cn('mt-1 text-sm text-gray-500 dark:text-gray-400', className)}>{children}</p>;
 }
 
 export function CardContent({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -47,7 +47,7 @@ export function CardContent({ children, className }: { children: React.ReactNode
 
 export function CardFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('mt-4 flex items-center border-t pt-4', className)}>
+    <div className={cn('mt-4 flex items-center border-t border-gray-100 dark:border-emerald-900/30 pt-4', className)}>
       {children}
     </div>
   );

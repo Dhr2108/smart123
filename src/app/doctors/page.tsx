@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -10,14 +10,28 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { mockDoctors, Doctor, DoctorAvailability } from '@/lib/mockData';
-import { formatDate, getStatusColor, getInitials, generateId } from '@/lib/utils';
-import { Plus, Search, Edit, Trash2, Eye, Calendar } from 'lucide-react';
+import { getInitials, generateId } from '@/lib/utils';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { doctorsApi } from '@/lib/api';
 
 const specializations = ['Cardiology', 'Neurology', 'Pediatrics', 'Orthopedics', 'Dermatology', 'General Medicine', 'Gynecology', 'Psychiatry', 'Radiology', 'Anesthesiology'];
 const departments = ['Cardiology', 'Neurology', 'Pediatrics', 'Orthopedics', 'Dermatology', 'General Medicine', 'Gynecology', 'Psychiatry', 'Radiology', 'Anesthesiology', 'Emergency', 'ICU'];
 
 export default function DoctorsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>(mockDoctors);
+
+  useEffect(() => {
+    doctorsApi
+      .list()
+      .then((res) => {
+        if (res.doctors && res.doctors.length > 0) {
+          setDoctors(res.doctors as Doctor[]);
+        }
+      })
+      .catch(() => {
+        // Fall back gracefully to mock data
+      });
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,14 +103,18 @@ export default function DoctorsPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingDoctor) {
+      const updated = { ...editingDoctor, ...formData, updatedAt: new Date().toISOString() };
       setDoctors((prev) =>
-        prev.map((d) =>
-          d.id === editingDoctor.id ? { ...d, ...formData, updatedAt: new Date().toISOString() } : d
-        )
+        prev.map((d) => (d.id === editingDoctor.id ? updated : d))
       );
+      try {
+        await doctorsApi.update(editingDoctor.id, formData);
+      } catch {
+        // Handled locally
+      }
     } else {
       const newDoctor: Doctor = {
         id: generateId('DOC'),
@@ -106,14 +124,25 @@ export default function DoctorsPage() {
         updatedAt: new Date().toISOString(),
       };
       setDoctors((prev) => [newDoctor, ...prev]);
+      try {
+        await doctorsApi.create(newDoctor);
+      } catch {
+        // Handled locally
+      }
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (doctorToDelete) {
-      setDoctors((prev) => prev.filter((d) => d.id !== doctorToDelete));
+      const id = doctorToDelete;
+      setDoctors((prev) => prev.filter((d) => d.id !== id));
       setDoctorToDelete(null);
+      try {
+        await doctorsApi.delete(id);
+      } catch {
+        // Handled locally
+      }
     }
     setIsDeleteConfirmOpen(false);
   };
@@ -134,7 +163,7 @@ export default function DoctorsPage() {
                 placeholder="Search doctors..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-emerald-900/60 bg-white dark:bg-black text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <Select

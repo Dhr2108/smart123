@@ -13,7 +13,7 @@ interface LayoutProps {
 
 export function Layout({ children, title, headerActions }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fafcfb] dark:bg-black text-gray-900 dark:text-gray-100 transition-colors duration-200">
       <Sidebar />
       <div className={cn('transition-all duration-300', 'lg:ml-64')}>
         <Header title={title}>
